@@ -24,7 +24,7 @@ def main():
     client.loop_start()
 
     #RF
-    rf = RFDevice(cGPIO['pin'])
+    rf = RFDevice(int(cGPIO['pin']))
     rf.enable_rx()
     rf.rx_callback
 
