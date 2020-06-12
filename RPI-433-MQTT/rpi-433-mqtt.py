@@ -14,7 +14,7 @@ except RuntimeError:
     warnings.warn("This can only be run on a Raspberry PI", RuntimeWarning)
 
 def read_timings(rx_pin):
-    print("reading timings on rx pin: " + rx_pin)
+    print("reading timings on rx pin: " + str(rx_pin))
     capture = []
     while True:
         start = time.time()
