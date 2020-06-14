@@ -5,13 +5,7 @@ import paho.mqtt.publish as publish
 import configparser
 import time
 import warnings
-
-try:
-    import RPi.GPIO as GPIO
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BOARD)
-except RuntimeError:
-    warnings.warn("This can only be run on a Raspberry PI", RuntimeWarning)
+from RPi import GPIO
 
 def read_timings(rx_pin):
     print("reading timings on rx pin: " + str(rx_pin))
@@ -22,14 +16,15 @@ def read_timings(rx_pin):
             capture.append((time.time() - start, GPIO.input(rx_pin)))
 
         elif len(capture) < 5:  # Any pattern is likely larger than 5 bits
+            print('len from capture lower then 5')
             capture = []
         else:
             return capture
 
 
 def record(rxpin):
-    print("recording")
-    GPIO.setup(rxpin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    print('recording')
+    GPIO.setup(rxpin, GPIO.IN)
     sample = read_timings(rxpin)
     print('Recorded', len(sample), 'bit transitions')
     return sample
@@ -52,7 +47,9 @@ def main():
     client.connect(cMqtt['host'])
     client.loop_start()
 
-    record(int(cGPIO['pin']))
+    while True:
+        print(record(int(cGPIO['pin'])))
+
     input("Press any key to exit..\n")
 
 
