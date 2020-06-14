@@ -19,8 +19,8 @@ def read_timings(rx_pin):
     while True:
         start = time.time()
         if GPIO.wait_for_edge(rx_pin, GPIO.BOTH, timeout=1000):
-            print('Got something')
-            capture.append((time.time() - start, GPIO.input(rx_pin)))
+            print(GPIO.input(rx_pin))
+            #capture.append((time.time() - start, GPIO.input(rx_pin)))
 
         elif len(capture) < 5:  # Any pattern is likely larger than 5 bits
             print('len from capture lower then 5')
