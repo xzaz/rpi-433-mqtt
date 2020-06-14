@@ -7,6 +7,7 @@ import time
 import logging
 import sys
 import signal
+import json
 from rpi_rf import RFDevice
 
 rfdevice = None
@@ -29,6 +30,7 @@ def main():
     config.read('config.ini')
     cMqtt = config['MQTT']
     cGPIO = config['GPIO']
+    cDevices = config['DEVICES']
     
     #MQTT
     client = mqtt.Client()
@@ -45,9 +47,17 @@ def main():
     timestamp = None
     logging.info("Listening for codes on GPIO " + str(cGPIO['pin']))
 
+    devices = cDevices['devices'].split(';')
+
+    for device in devices:
+        client.publish("homeassistant/switch/rpi-433-mqtt/" + str(device) + "/config", json.dumps({"name" : str(device), "command_topic" : "homeassistant/switch/rpi-433-mqtt/" + str(device) + "/set", "state_topic" : "homeassistant/switch/rpi-433-mqtt/" + str(device) + "/state" }))
+
     while True:
         if rfdevice.rx_code_timestamp != timestamp:
             timestamp = rfdevice.rx_code_timestamp
+            if str(rfdevice.rx_code) in devices:
+                client.publish("homeassistant/switch/rpi-433-mqtt/" + str(rfdevice.rx_code) + "/set", "ON")
+
             logging.info(str(rfdevice.rx_code) +
                      " [pulselength " + str(rfdevice.rx_pulselength) +
                      ", protocol " + str(rfdevice.rx_proto) + "]")
