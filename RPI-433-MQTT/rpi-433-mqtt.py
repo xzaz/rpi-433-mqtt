@@ -4,37 +4,21 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import configparser
 import time
-import warnings
+import logging
+import sys
+import signal
+from rpi_rf import RFDevice
 
-try:
-    import RPi.GPIO as GPIO
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BOARD)
-except RuntimeError:
-    warnings.warn("This can only be run on a Raspberry PI", RuntimeWarning)
+rfdevice = None
 
-def read_timings(rx_pin):
-    print("reading timings on rx pin: " + str(rx_pin))
-    capture = []
-    while True:
-        start = time.time()
-        if GPIO.wait_for_edge(rx_pin, GPIO.BOTH, timeout=1000):
-            print(GPIO.input(rx_pin))
-            #capture.append((time.time() - start, GPIO.input(rx_pin)))
-
-        elif len(capture) < 5:  # Any pattern is likely larger than 5 bits
-            print('len from capture lower then 5')
-            capture = []
-        else:
-            return capture
+# pylint: disable=unused-argument
+def exithandler(signal, frame):
+    rfdevice.cleanup()
+    sys.exit(0)
 
 
-def record(rxpin):
-    print("recording")
-    GPIO.setup(rxpin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    sample = read_timings(rxpin)
-    print('Recorded', len(sample), 'bit transitions')
-    return sample
+logging.basicConfig(level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',
+                    format='%(asctime)-15s - [%(levelname)s] %(module)s: %(message)s', )
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with code: " + str(rc))
@@ -54,11 +38,22 @@ def main():
     client.connect(cMqtt['host'])
     client.loop_start()
 
-    while True:
-        print(record(int(cGPIO['pin'])))
-        
-    input("Press any key to exit..\n")
+    # RF
+    signal.signal(signal.SIGINT, exithandler)
+    rfdevice = RFDevice(int(cGPIO['pin']))
+    rfdevice.enable_rx()
+    timestamp = None
+    logging.info("Listening for codes on GPIO " + str(cGPIO['pin']))
 
+    while True:
+        if rfdevice.rx_code_timestamp != timestamp:
+            timestamp = rfdevice.rx_code_timestamp
+            logging.info(str(rfdevice.rx_code) +
+                     " [pulselength " + str(rfdevice.rx_pulselength) +
+                     ", protocol " + str(rfdevice.rx_proto) + "]")
+        time.sleep(0.01)
+
+    rfdevice.cleanup()    
 
 if __name__ == "__main__":
     main()
