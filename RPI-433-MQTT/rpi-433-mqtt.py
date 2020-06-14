@@ -50,7 +50,7 @@ def main():
     devices = cDevices['devices'].split(';')
 
     for device in devices:
-        client.publish("homeassistant/switch/rpi-433-mqtt/" + str(device) + "/config", json.dumps({"name" : str(device), "command_topic" : "homeassistant/switch/rpi-433-mqtt/" + str(device) + "/set", "state_topic" : "homeassistant/switch/rpi-433-mqtt/" + str(device) + "/state", "payload_on" : "ON", "payload_off" : "OFF", "optimistic" : False }))
+        client.publish("homeassistant/switch/rpi-433-mqtt/" + str(device) + "/config", json.dumps({"name" : str(device), "command_topic" : "homeassistant/switch/rpi-433-mqtt/" + str(device) + "/cmd", "state_topic" : "homeassistant/switch/rpi-433-mqtt/" + str(device) + "/state", "payload_on" : "ON", "payload_off" : "OFF", "optimistic" : False }))
 
     while True:
         if rfdevice.rx_code_timestamp != timestamp:
