@@ -47,7 +47,7 @@ def main():
     timestamp = None
     logging.info("Listening for codes on GPIO " + str(cGPIO['pin']))
 
-    for device, name in config.get('DEVICES'):
+    for device, name in dict(cDevices):
         client.publish("homeassistant/switch/rpi-433-mqtt/" + str(device) + "/config", json.dumps({"automation_type" : "trigger", "topic" : "homeassistant/switch/rpi-433-mqtt/" + str(device) + "/topic", "type" : "click", "subtype" : "on", "payload" : "on", "device" : { "identifiers" : str(device), "name": str(name), "model" : "raspberryPI" } }))
 
     while True:
