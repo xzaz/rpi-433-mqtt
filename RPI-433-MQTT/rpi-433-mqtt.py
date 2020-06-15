@@ -48,13 +48,13 @@ def main():
     logging.info("Listening for codes on GPIO " + str(cGPIO['pin']))
 
     for device, name in cDevices.items():
-        client.publish("homeassistant/switch/rpi-433-mqtt/" + str(device) + "/config", json.dumps({"automation_type" : "trigger", "topic" : "homeassistant/switch/rpi-433-mqtt/" + str(device) + "/topic", "type" : "click", "subtype" : "on", "payload" : "on", "device" : { "identifiers" : str(device), "name": str(name), "model" : "raspberryPI" } }))
+        client.publish("homeassistant/device_automation/rpi-433-mqtt/" + str(device) + "/config", json.dumps({"automation_type" : "trigger", "topic" : "homeassistant/device_automation/rpi-433-mqtt/" + str(device) + "/topic", "type" : "click", "subtype" : "on", "payload" : "on", "device" : { "identifiers" : str(device), "name": str(name), "model" : "raspberryPI" } }))
 
     while True:
         if rfdevice.rx_code_timestamp != timestamp:
             timestamp = rfdevice.rx_code_timestamp
             if str(rfdevice.rx_code) in cDevices:
-                client.publish("homeassistant/switch/rpi-433-mqtt/" + str(rfdevice.rx_code) + "/topic", "on")
+                client.publish("homeassistant/device_automation/rpi-433-mqtt/" + str(rfdevice.rx_code) + "/topic", "on")
 
             logging.info(str(rfdevice.rx_code) +
                      " [pulselength " + str(rfdevice.rx_pulselength) +
